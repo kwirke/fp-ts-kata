@@ -1,10 +1,10 @@
-# Контейнер Maybe
+# Maybe Container
 
-Контейнер Maybe — это способ представления nullable-значений так, чтобы с ними было возможно работать безопасным способом.
+The Maybe container is a way of representing nullable values ​​so that it is possible to work with them in a safe way.
 
-> В терминологии `fp-ts` Maybe — это тип данных `Option`, доступный в модуле `fp-ts/lib/Option`. Тем не менее, в дидактических целях я буду использовать именно название Maybe для этого упражнения.
+> In `fp-ts` terminology, Maybe is the `Option` data type available in the `fp-ts/lib/Option` module. However, for didactic purposes, I will use the name Maybe for this exercise.
 
-По сути, Maybe — это т.н. «размеченное объединение», по-английски «discriminated union» (google it!), и определяется очень просто:
+In fact, Maybe is what we call a "discriminated union" (google it!), and it is defined in a very simple way:
 
 ```ts
 type Nothing = Readonly<{ tag: 'Nothing' }>;
@@ -12,22 +12,22 @@ type Just<A> = Readonly<{ tag: 'Just'; value: A }>;
 type Maybe<A> = Nothing | Just<A>;
 ```
 
-Для удобства работы также определяют пару конструкторов:
+For convenience, a pair of constructors is also defined:
 
 ```ts
 const nothing: Maybe<never> = { tag: 'Nothing' };
 const just = <A>(value: A): Maybe<A> => ({ tag: 'Just', value });
 ```
 
-> **Заметка про классы типов (type classes)**
+> **A note about type classes**
+>
+> From now on I will use the term "type class". All the constructions we will see further in this kata — functors, applicatives, monads — are type classes. You can think of them as interfaces that define a certain behavior. If the type belongs to a type class, then this means that it implements and supports the behavior that describes the type class.
 > 
-> В дальнейшем я буду использовать термин «класс типа» или «тайпкласс». Все конструкции, которые мы будем рассматривать в дальнейших ката, — функтор, аппликатив, монада — будут являться классами типа. Вы можете думать о них как об интерфейсах, которые определяют некое поведение. Если тип является частью тайплкасса, то это значит, что он реализует и поддерживает то поведение, которое описывает тайпкласс. 
-> 
-> В языке TypeScript «чистых» тайпклассов нет, поэтому я буду описывать их при помощи интерфейсов. Я буду использовать термин «экземпляр (тайпкласса) X для (контейнера) Y», чтобы подчеркнуть, что интерфейс X не должен быть жёстко вшит в контейнер Y, а может быть определен независимо. Например, это даёт вам возможность импортировать в свою программу только ту часть тайпклассов для вашего контейнера Y, которая необходима в данный конкретный момент.
+> In TypeScript, there are no "pure" type classes, so I will describe them using interfaces. I will use the term "instance of (class) X for (container) Y" to emphasize that the interface X should not be firmly bound to container Y, but can be defined independently. This, for example, gives you the opportunity to import into your program only the type classes you need for your container Y at a given time.
 
-## Функтор (Functor)
+## Functor
 
-О функторе для Maybe можно думать как об интерфейсе, реализующем только один метод — `fmap`:
+You can think of the functor for Maybe as an interface that implements only one method — `fmap`:
 
 ```ts
 interface Functor<A> {
@@ -35,32 +35,32 @@ interface Functor<A> {
 }
 ```
 
-Метод `fmap` можно рассматривать с двух сторон:
-1. Как способ «применить» чистую функцию к «контейнеризированному» значению;
-2. Как способ «поднять в контекст контейнера» чистую функцию.
+The `fmap` method can be viewed from two sides:
+1. As a way to “apply” a pure function to a “containerized” value;
+2. As a way to “raise to container context” a pure function.
 
-Действительно, если немного по-другому расставить скобки в интерфейсе, мы можем получить такую сигнатуру функции `fmap`:
+Indeed, if we place brackets in the interface a little differently, we can get such a signature of the  `fmap` function:
 
 ```ts
 const fmap: <A, B>(f: (a: A) => B) => ((ma: Maybe<A>) => Maybe<B>);
 ```
 
-Можно воспользоваться интерфейсом `Function1` из `fp-ts`, и получить такое определение `fmap`:
+You can use the `Function1` interface from `fp-ts`, and get the definition of `fmap`:
 
 ```ts
 const fmap: <A, B>(f: (a: A) => B) => Function1<Maybe<A>, Maybe<B>>;
 ```
 
-Функтор должен подчиняться двум алгебраическим законам:
+The functor must obey two algebraic laws:
 
-1. Закон сохранения композиции функций: `fmap f ∘ fmap g ≅ fmap (f ∘ g)`
-2. Закон сохранения идентичности: `fmap id ≅ id`
+1. The law of conservation of function composition: `fmap f ∘ fmap g ≅ fmap (f ∘ g)`
+2. Identity preservation law: `fmap id ≅ id`
 
-Ваша задача — определить экземпляр функтора для контейнера Maybe, написав функцию `fmap`.
+Your task is to define an instance of the functor for the Maybe container by writing the `fmap` function.
 
-## Аппликативный функтор (Applicative)
+## Applicative Functor (Applicative)
 
-Аппликативный функтор позволяет применить функцию, поднятую в контекст, к значению в этом контексте. Об аппликативном функторе для Maybe можно думать как об интерфейсе, определяющем пару операций:
+An applicative functor allows you to apply a function raised in a context to a value in that context. We can think of the applicative functor for Maybe as an interface defining a pair of operations:
 
 ```ts
 interface Applicative<A> {
@@ -69,20 +69,20 @@ interface Applicative<A> {
 }
 ```
 
-Аппликативный функтор подчиняется 4 законам:
+The applicative functor obeys 4 laws:
 
-1. Идентичность: `ap (of id) ma ≅ ma`
-2. Гомоморфизм: `ap (of ab) (of a) ≅ of (ab a)`
-3. Заменяемость: `ap fab (of a) ≅ ap (\ab -> ab a) fab`
-4. Композиция: `ap (ap (ap (of compose) u) v) w ≅ ap u (ap v w)`
+1. Identity: `ap (of id) ma ≅ ma`
+2. Homomorphism: `ap (of ab) (of a) ≅ of (ab a)`
+3. Interchange: `ap fab (of a) ≅ ap (\ab -> ab a) fab`
+4. Composition: `ap (ap (ap (of compose) u) v) w ≅ ap u (ap v w)`
 
-Ваша задача — определить экземпляр аппликативного функтора для Maybe, написав функции `of` и `ap`.
+Your task is to define an instance of the applicative functor for Maybe by writing the functions `of` and `ap`.
 
-## Альтернатива (Alternative)
+## Alternative
 
-Альтернатива позволяет вам определить пару операций: ассоциативную операцию `alt`, которая «делает выбор» из двух своих аргументов, и операцию `zero`, которая служит нейтральным (нулевым) элементом для операции `alt` как слева, так и справа. Альтернатива может быть реализована для аппликативного функтора — из-за требования ассоциативности `alt` и наличия нейтрального элемента.
+The alternative type allows you to define a pair of operations: An associative alt operation, which “chooses” between its two arguments, and a zero operation, which serves as a neutral (zero) element for the alt operation both on the left and on the right. An alternative can be implemented for an applicative functor - due to the requirement of alt associativity and the presence of a neutral element.
 
-Вы можете думать об альтернативе как о бинарной операции `||` в JS, только для контейнеров:
+You can think of an alternative as the binary operation `||` in JS, but only for containers:
 
 ```js
 const iamnull = null;
@@ -93,21 +93,21 @@ const result1 = iamnull || fallback; // => 42;
 const result2 = iamnotnull || fallback; // => 'hello';
 ```
 
-Альтернатива должна подчиняться законам:
+An alternative must obey these laws:
 
-1. Левой идентичности: `alt zero ma ≅ ma`
-2. Правой идентичности: `alt ma zero ≅ ma`
-3. Ассоциативности: `alt (alt ma mb) mc ≅ alt ma (alt mb mc)`
-4. Дистрибутивности: `ap (alt fab gab) ma ≅ alt (ap fab ma) (ap gab ma)`
-5. Аннигиляции: `fmap zero f ≅ zero`, `ap fa zero ≅ zero`
+1. Left identity: `alt zero ma ≅ ma`
+2. Right identity: `alt ma zero ≅ ma`
+3. Associativity: `alt (alt ma mb) mc ≅ alt ma (alt mb mc)`
+4. Distributivity: `ap (alt fab gab) ma ≅ alt (ap fab ma) (ap gab ma)`
+5. Annihilation: `fmap zero f ≅ zero`, `ap fa zero ≅ zero`
 
-Ваша задача — определить экземпляр альтернативы для Maybe, написав функции `zero` и `alt`.
+Your task is to define an alternative instance for Maybe by writing the functions `zero` and `alt`.
 
-## Монада (Monad)
+## Monad
 
-Монада объединяет в себе интерфейс аппликативного функтора и интерфейс `Chain` — последовательной цепочки вычислений, использующей результат предыдущей функции для определения последовательности следующих функций.
+The monad combines the applicative functor interface and the `Chain` interface, a sequential chain of calculations that uses the result of a previous function to determine the sequence of the following functions.
 
-Вы можете думать о монаде для Maybe как об интерфейсе, реализующем функции `of` и `chain`:
+You can think of the monad for Maybe as an interface that implements the functions `of` and `chain`:
 
 ```ts
 interface Monad<A> {
@@ -116,49 +116,48 @@ interface Monad<A> {
 }
 ```
 
-Монада должна подчиняться трём законам:
+A monad must obey three laws:
 
-1. Левой идентичности: `chain f (of a) ≅ f a`
-2. Правой идентичности: `chain of fa ≅ fa`
-3. Ассоциативности: `chain (chain afb fa) bfc ≅ chain (\a -> chain bfc (afb a)) fa`
+1. Left identity: `chain f (of a) ≅ f a`
+2. Right identity: `chain of fa ≅ fa`
+3. Associativity: `chain (chain afb fa) bfc ≅ chain (\a -> chain bfc (afb a)) fa`
 
-и всем законам для аппликативного функтора.
+plus all laws for an applicative functor.
 
-> Важный момент: монада может определяться не только парой `of` и `chain`, но и парой `of` и `flatten`!
+> The important bit: A monad can be defined not only by a pair of `of` and `chain` , but also by a pair `of` and `flatten`!
 
-Функция `flatten` осуществляет «схлопывание» одного уровня контейнера:
+The `flatten` function “collapses” one level of the container:
 
 ```ts
 const flatten: <A>(mma: Maybe<Maybe<A>>) => Maybe<A>;
 ```
 
-Функции `chain` и `flatten` могут быть выражены друг через друга:
+The functions `chain` and `flatten` can be expressed in terms of each other:
 
 ```ts
 const chain = f => ma => flatten(fmap(f)(ma));
 const flatten = mma => chain(fmap(identity))(mma);
 ```
+Therefore, in some functional operations, the `chain` operation can still be called `flatMap`, which reflects its essence more accurately: It “raises” (map) computations of the form `A => F<B>` to the context `F`, receives an intermediate result of the form `F<F<B>>`, and then “flattens” one level, returning just `F<B>`.
 
-Поэтому в некоторых функциональных библиотеках операция `chain` еще может носить название `flatMap`, что более точно отражает ее суть: она «поднимает» (map) вычисления вида `A => F<B>` в контекст `F`, получает промежуточный результат вида `F<F<B>>`, а потом «уплощает» один уровень, возвращая просто `F<B>`.
+> By the way, in the ECMAScript 2015 standard, the arrays have a `flatMap` operation, which is exactly the monadic `chain` operation.
 
-> Кстати, в стандарте ECMAScript 2015 для массивов определена операция `flatMap`, которая как раз и является монадической операцией `chain`.
+Your task is to define an instance of the monad for Maybe by writing the functions `chain` and `flatten`.
 
-Ваша задача — определить экземпляр монады для Maybe, написав функции `chain` и `flatten`.
+# Conclusion
 
-# Выводы
+Hopefully, after finishing this kata you will be able to draw the following conclusions:
 
-Я надеюсь, что после прохождения этой ката вы сделаете следующие выводы:
-
-1. Понятие «контейнер» не эквивалентно понятиям «монада»/«функтор»/«аппликатив»/etc., поскольку мы определяем экземпляры тайпклассов функтор/монада/etc. *для* контейнера, а не *модифицируем* сам контейнер.
-2. В ваших программах может использоваться только часть интерфейсов контейнера, имеющего экземпляры для нескольких тайпклассов. Это позволяет вам использовать принцип наименьшего знания и ограничивать в коде типы аргументов функций только теми возможностями, которые вам нужны в конкретный момент времени. Например, при использовании `fp-ts` можно запрашивать только нужные вам экземпляры тайпклассов:
+1. The concept of “container” is not equivalent to the concepts of “monad” / “functor” / “applicative” / etc., Since we define instances of the multiplication classes functor / monad / etc. for the container, *not modifying* the container itself.
+2. In your programs, you can use just a part of the interface of a container that has instances for several type classes. This allows you to use the principle of least knowledge and limit the types of function arguments in the code to only those features that you need at a particular point in time. For example, when using fp-ts, you can import only the instances of the type classes you need:
 
     ```ts
-    // Предположим, что в `foo` вы используете только `of`.
-    // Тогда вместо:
+    // Suppose you only use `of` in `foo`.
+    // Then, instead of:
     const foo: (M: Monad<F>) => <A, B>(fa: HKT<F, A>) => HKT<F, B>;
-    // можно написать:
+    // you can write:
     const foo: (M: Applicative<F>) => <A, B>(fa: HKT<F, A>) => HKT<F, B>;
     ```
 
-    Про нотацию `HKT<F, A>` мы поговорим позже, когда дойдем до определения типов высших порядков.
-3. Из-за того, что тайпклассы функтора, монады, аппликатива, альтернативы и т.д. подчиняются алгебраическим законам, их можно выражать друг через друга и переиспользовать части их интерфейсов.
+    About the notation of `HKT<F, A>` we will talk later when we get to the definition of higher order types.
+3. Due to the fact that the type classes of a functor, monad, applicative, alternative, etc. obey algebraic laws, they can be expressed in terms of each other and reuse parts of their interfaces.
