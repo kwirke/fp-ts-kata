@@ -1,11 +1,11 @@
 # Code kata for `fp-ts`
 
-В этом репозитории хранятся ката для функционального TypeScript с использованием библиотеки [fp-ts](https://github.com/gcanti/fp-ts).
+This repository stores a kata for functional TypeScript using the [fp-ts](https://github.com/gcanti/fp-ts) library.
 
-Как пользоваться этим репозиторием:
+How to use this repository:
 
-1. Клонируйте содержимое репозитория к себе на компьютер.
-2. Установите все зависимости: `npm ci`.
-3. Запустите тесты (`npm test`).
-4. Допишите недостающий код в соответствующие ката.
-5. См. п. 3.
+1. Clone the contents of the repository to your computer.
+2. Install all dependencies: `npm ci`.
+3. Run the tests (`npm test`).
+4. Add the missing code to the appropriate kata.
+5. Go to step 3.
