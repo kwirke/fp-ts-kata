@@ -38,7 +38,7 @@ export const success = <E, A>(value: A): Result<E, A> => ({ tag: 'Success', valu
 
 ## Bifunctor
 
-When we have a type with two parameters, like `Result<E, A>`, then we can implement for it an instance of the bifunctor type. This type class defines two operations: `mapLeft`, which allows you to perform a functor's `map` for the left (erroneous) part of the container, and a `bimap`, which performs simultaneous mapping of one of the two functions `f` and `g`, depending on the state of the container:
+When we have a type with two parameters, like `Result<E, A>`, then we can implement for it an instance of the bifunctor type. This type class defines two operations: `mapLeft`, which allows you to perform a functor's `map` for the left (erroneous) part of the container, and a `bimap`, which performs a mapping using one of the two functions `f` or `g`, depending on the state of the container:
 
 ```ts
 interface Bifunctor<E, A> {
@@ -56,7 +56,7 @@ A good description of a bifunctor with picture diagrams of `bimap` behavior is g
 In this kata, you need to implement a functor, monad, applicative, alt, and bifunctor in the form of HKT for the Result container.
 
 > Think about why we cannot write an instance of the alternative class for Result, but we can write an instance of the Alt class, which defines only the `alt` method, but does not define the `zero` method.
->> An important lesson is: a type class implementation means an *unambiguous* and *unique* implementation. If we can implement a method from a type class in several ways, it means either we are thinking of a container specialization (for example, Validation is a specialized implementation of Either that is left-associative), or it is impossible to implement this type class in principle.
+>> An important lesson is: A type class must have an *unambiguous* and *unique* implementation for a container. If we can implement a method from a type class in several ways, it means either we are thinking of a container specialization (for example, Validation is a specialized implementation of Either that is left-associative), or it is impossible to implement this type class in principle.
 
 # Conclusion
 
