@@ -148,7 +148,7 @@ Your task is to define an instance of the monad for Maybe by writing the functio
 
 Hopefully, after finishing this kata you will be able to draw the following conclusions:
 
-1. The concept of “container” is not equivalent to the concepts of “monad” / “functor” / “applicative” / etc., Since we define instances of the multiplication classes functor / monad / etc. for the container, *not modifying* the container itself.
+1. The concept of “container” is not equivalent to the concepts of “monad” / “functor” / “applicative” / etc., since we define instances of the type classes functor / monad / etc. for the container, *not modifying* the container itself.
 2. In your programs, you can use just a part of the interface of a container that has instances for several type classes. This allows you to use the principle of least knowledge and limit the types of function arguments in the code to only those features that you need at a particular point in time. For example, when using fp-ts, you can import only the instances of the type classes you need:
 
     ```ts
@@ -159,5 +159,5 @@ Hopefully, after finishing this kata you will be able to draw the following conc
     const foo: (M: Applicative<F>) => <A, B>(fa: HKT<F, A>) => HKT<F, B>;
     ```
 
-    About the notation of `HKT<F, A>` we will talk later when we get to the definition of higher order types.
+    About the notation of `HKT<F, A>` we will talk later when we get to the definition of higher kinded types.
 3. Due to the fact that the type classes of a functor, monad, applicative, alternative, etc. obey algebraic laws, they can be expressed in terms of each other and reuse parts of their interfaces.
