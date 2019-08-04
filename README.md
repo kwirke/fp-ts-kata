@@ -1,5 +1,7 @@
 # Code kata for `fp-ts`
 
+This fork is a translation of [YBogomolov/fp-ts-kata](https://github.com/YBogomolov/fp-ts-kata). All credit goes to him.
+
 This repository stores a kata for functional TypeScript using the [fp-ts](https://github.com/gcanti/fp-ts) library.
 
 How to use this repository:
